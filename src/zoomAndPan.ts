@@ -1,6 +1,23 @@
+// Only allow zooming out
+const MIN_ZOOM = 0;
+const MAX_ZOOM = 1;
+
+const ZOOM_SENSITIVITY = 500;
+
 let canvas: HTMLCanvasElement | null = null;
 let ctx: CanvasRenderingContext2D | null = null;
 let draw: (() => void) | null = null;
+
+declare global {
+	interface Window {
+		canvasState?: {
+			canvasWidth: number;
+			canvasHeight: number;
+			viewportTopLeft: Point;
+			scale: number;
+		};
+	}
+}
 
 type Point = {
 	x: number;
@@ -20,8 +37,6 @@ function addPoints(p1: Point, p2: Point) {
 function scalePoint(p1: Point, scale: number) {
 	return { x: p1.x / scale, y: p1.y / scale };
 }
-
-const ZOOM_SENSITIVITY = 500;
 
 let scale = 1;
 let offset: Point = ORIGIN;
@@ -61,7 +76,7 @@ const onMouseMove = (event: MouseEvent) => {
 	applyPan();
 	lastMousePos = currentMousePos;
 
-	if (draw) draw();
+	drawFrame();
 };
 
 const onMouseUp = () => {
@@ -111,12 +126,20 @@ const onMouseUpdate = (event: MouseEvent) => {
 const applyZoom = (event: WheelEvent) => {
 	if (!ctx) return;
 
-	const zoom = 1 - event.deltaY / ZOOM_SENSITIVITY;
+	let zoom = 1 - event.deltaY / ZOOM_SENSITIVITY;
 	const viewportTopLeftDelta = {
 		x: (mousePos.x / scale) * (1 - 1 / zoom),
 		y: (mousePos.y / scale) * (1 - 1 / zoom),
 	};
 	const newViewportTopLeft = addPoints(viewportTopLeft, viewportTopLeftDelta);
+
+	if (scale * zoom < MIN_ZOOM && zoom < 1) {
+		return;
+	}
+
+	if (scale * zoom > MAX_ZOOM && zoom > 1) {
+		return;
+	}
 
 	ctx.translate(viewportTopLeft.x, viewportTopLeft.y);
 	ctx.scale(zoom, zoom);
@@ -128,7 +151,7 @@ const applyZoom = (event: WheelEvent) => {
 	applyPan();
 	applyTransform();
 
-	if (draw) draw();
+	drawFrame();
 };
 
 const onResize = () => {
@@ -141,6 +164,17 @@ const onWheel = (event: WheelEvent) => {
 	applyZoom(event);
 };
 
+const drawFrame = () => {
+	if (!draw) return;
+
+	window.canvasState = {
+		canvasHeight,
+		canvasWidth,
+		viewportTopLeft,
+		scale,
+	};
+};
+
 export const setupZoomAndPan = (
 	element: HTMLCanvasElement,
 	context: CanvasRenderingContext2D,
@@ -149,6 +183,10 @@ export const setupZoomAndPan = (
 	canvas = element;
 	ctx = context;
 	draw = drawFunction;
+	canvasWidth = canvas.width;
+	canvasHeight = canvas.height;
+
+	drawFrame();
 
 	document.addEventListener("resize", onResize);
 	document.addEventListener("mousemove", onMouseUpdate);

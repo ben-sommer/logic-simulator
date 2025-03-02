@@ -11,19 +11,26 @@ const onResize = () => {
 };
 
 const draw = () => {
-	if (!ctx) return;
+	if (!ctx || !window.canvasState) return;
+
+	const { canvasHeight, canvasWidth, scale, viewportTopLeft } =
+		window.canvasState;
 
 	const previousTransform = ctx.getTransform();
 
 	ctx.clearRect(0, 0, 1000, 1000);
 
-	const width = 100;
-	const height = 50;
-	const x = 100;
-	const y = 200;
-
-	ctx.fillStyle = "lightblue";
-	ctx.fillRect(x, y, width, height);
+	const squareSize = 20;
+	ctx.fillStyle = "blue";
+	ctx.fillRect(
+		canvasWidth / 2 - squareSize / 2,
+		canvasHeight / 2 - squareSize / 2,
+		squareSize,
+		squareSize
+	);
+	ctx.arc(viewportTopLeft.x, viewportTopLeft.y, 25 / scale, 0, 2 * Math.PI);
+	ctx.fillStyle = "red";
+	ctx.fill();
 
 	ctx.setTransform(previousTransform);
 };
