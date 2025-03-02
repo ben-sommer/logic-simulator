@@ -60,6 +60,8 @@ const onMouseMove = (event: MouseEvent) => {
 	applyTransform();
 	applyPan();
 	lastMousePos = currentMousePos;
+
+	if (draw) draw();
 };
 
 const onMouseUp = () => {
@@ -89,8 +91,6 @@ const applyTransform = () => {
 	const storedTransform = ctx.getTransform();
 	ctx.canvas.width = ctx.canvas.width;
 	ctx.setTransform(storedTransform);
-
-	if (draw) draw();
 };
 
 const onMouseUpdate = (event: MouseEvent) => {
@@ -127,6 +127,8 @@ const applyZoom = (event: WheelEvent) => {
 
 	applyPan();
 	applyTransform();
+
+	if (draw) draw();
 };
 
 const onResize = () => {

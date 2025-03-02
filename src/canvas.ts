@@ -13,8 +13,24 @@ const onResize = () => {
 const draw = () => {
 	if (!ctx) return;
 
-	ctx.fillStyle = "black";
-	ctx.fillRect(100, 200, 50, 80);
+	const previousTransform = ctx.getTransform();
+
+	ctx.clearRect(0, 0, 1000, 1000);
+
+	const width = 100;
+	const height = 50;
+	const x = 100;
+	const y = 200;
+
+	ctx.fillStyle = "lightblue";
+	ctx.fillRect(x, y, width, height);
+
+	ctx.setTransform(previousTransform);
+};
+
+const drawLoop = () => {
+	draw();
+	window.requestAnimationFrame(drawLoop);
 };
 
 export function setupCanvas(element: HTMLCanvasElement) {
@@ -26,6 +42,6 @@ export function setupCanvas(element: HTMLCanvasElement) {
 
 	if (!ctx) return;
 
-	draw();
-	setupZoomAndPan(canvas, ctx, draw);
+	drawLoop();
+	setupZoomAndPan(canvas, ctx, () => window.requestAnimationFrame(draw));
 }
