@@ -1,3 +1,4 @@
+import { getGate } from "./images";
 import { setupZoomAndPan } from "./zoomAndPan";
 
 let canvas: HTMLCanvasElement | null = null;
@@ -10,7 +11,9 @@ const onResize = () => {
 	canvas.height = window.innerHeight;
 };
 
-const draw = () => {
+const OR = await getGate("OR");
+
+const draw = async () => {
 	if (!ctx || !window.canvasState) return;
 
 	const { canvasHeight, canvasWidth, scale, viewportTopLeft } =
@@ -18,10 +21,11 @@ const draw = () => {
 
 	const previousTransform = ctx.getTransform();
 
-	ctx.clearRect(0, 0, 1000, 1000);
-
 	const squareSize = 20;
 	ctx.fillStyle = "blue";
+
+	ctx?.drawImage(OR, 200, 200);
+
 	ctx.fillRect(
 		canvasWidth / 2 - squareSize / 2,
 		canvasHeight / 2 - squareSize / 2,
